@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Mix · Painel de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #F7F3F0; color: #1a1a1a; min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #8F1245 0%, #BF195D 55%, #C91F6B 100%);
+    position: relative; overflow: hidden; padding: 24px 24px 0;
+  }
+  .header::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .header::after {
+    content: ''; position: absolute; bottom: -40px; left: -30px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .header-top { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; position: relative; z-index: 1; }
+  .logo-box {
+    width: 50px; height: 50px; border-radius: 13px; background: #99CC0F;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25); flex-shrink: 0;
+  }
+  .brand-name { font-family: 'Bebas Neue', cursive; font-size: 26px; color: white; letter-spacing: 2.5px; line-height: 1; }
+  .brand-sub { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+  .header-date { margin-left: auto; text-align: right; }
+  .header-date-label { font-size: 10px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  .header-date-val { font-size: 15px; color: white; font-weight: 700; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 3px; position: relative; z-index: 1; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 10px 16px; border: none; border-radius: 10px 10px 0 0; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px;
+    background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.85);
+    transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+  }
+  .tab.active { background: #F7F3F0; color: #8F1245; }
+
+  /* CONTENT */
+  .content { padding: 22px 20px; max-width: 1100px; }
+
+  /* SUMMARY CARDS */
+  .summary { display: grid; gap: 12px; margin-bottom: 18px; }
+  .summary.cols-3 { grid-template-columns: repeat(3,1fr); }
+  .summary.cols-2 { grid-template-columns: repeat(2,1fr); }
+  .stat-card {
+    background: white; border-radius: 14px; padding: 16px 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-left: 4px solid #8F1245;
+  }
+  .stat-label { font-size: 11px; color: #6B7280; font-weight: 500; margin-bottom: 4px; }
+  .stat-val { font-family: 'Bebas Neue', cursive; font-size: 24px; letter-spacing: 1px; }
+
+  /* TABLE */
+  .table-wrap { background: white; border-radius: 16px; box-shadow: 0 2px 14px rgba(0,0,0,0.06); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  thead tr { background: #041F40; }
+  thead th { padding: 12px 14px; text-align: left; color: white; font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; white-space: nowrap; }
+  tbody tr:nth-child(even) { background: #FAFAFA; }
+  tbody tr.vencido { background: #FFF5F5; }
+  tbody td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
+  td.nowrap { white-space: nowrap; }
+  td.trunc { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.bold { font-weight: 700; color: #111827; }
+  td.money { font-weight: 700; color: #041F40; white-space: nowrap; }
+  td.dre { font-size: 11px; color: #8F1245; font-weight: 600; }
+  td.muted { color: #6B7280; font-size: 12px; }
+  td.red { color: #991B1B; font-weight: 700; }
+
+  /* BADGE */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .badge-aberto { background: #FFF3CD; color: #856404; }
+  .badge-aberto .badge-dot { background: #F59E0B; }
+  .badge-pago { background: #D1FAE5; color: #065F46; }
+  .badge-pago .badge-dot { background: #10B981; }
+  .badge-vencido { background: #FEE2E2; color: #991B1B; }
+  .badge-vencido .badge-dot { background: #EF4444; }
+  .badge-notstarted { background: #F3F4F6; color: #374151; }
+  .badge-notstarted .badge-dot { background: #9CA3AF; }
+  .badge-inprogress { background: #DBEAFE; color: #1E40AF; }
+  .badge-inprogress .badge-dot { background: #3B82F6; }
+  .badge-done { background: #D1FAE5; color: #065F46; }
+  .badge-done .badge-dot { background: #10B981; }
+
+  /* PEDIDOS CARDS */
+  .pedido-card {
+    background: white; border-radius: 16px; padding: 18px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 12px;
+  }
+  .pedido-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .pedido-nome { font-weight: 700; font-size: 15px; color: #111827; }
+  .pedido-meta { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
+  .pedido-valor { font-family: 'Bebas Neue', cursive; font-size: 20px; color: #041F40; text-align: right; }
+  .pedido-pct { font-size: 11px; font-weight: 700; text-align: right; }
+  .progress-bar { height: 5px; background: #F3F4F6; border-radius: 99px; margin-bottom: 14px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.4s; }
+  .checks { display: flex; gap: 10px; flex-wrap: wrap; }
+  .check-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .check-box {
+    width: 22px; height: 22px; border-radius: 6px; border: 2px solid #D1D5DB;
+    background: transparent; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+  }
+  .check-box.checked { background: #99CC0F; border-color: #99CC0F; }
+  .check-label { font-size: 12px; color: #9CA3AF; font-weight: 400; }
+  .check-label.checked { color: #374151; font-weight: 600; }
+
+  /* TAREFAS */
+  .tarefa-card {
+    background: white; border-radius: 13px; padding: 13px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 9px;
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .tarefa-card.done { opacity: 0.55; }
+  .tarefa-circle {
+    width: 24px; height: 24px; border-radius: 7px; border: 2px solid #D1D5DB;
+    background: transparent; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+  }
+  .tarefa-circle.done { background: #99CC0F; border-color: #99CC0F; }
+  .tarefa-circle.inprogress { background: rgba(59,130,246,0.1); border-color: #3B82F6; }
+  .tarefa-body { flex: 1; min-width: 0; }
+  .tarefa-title { font-size: 13px; font-weight: 600; color: #111827; line-height: 1.4; }
+  .tarefa-title.done { text-decoration: line-through; color: #9CA3AF; }
+  .tarefa-meta { display: flex; gap: 8px; margin-top: 4px; align-items: center; flex-wrap: wrap; }
+  .tarefa-setor { font-size: 11px; color: #6B7280; }
+  .tarefa-prazo { font-size: 11px; font-weight: 600; color: #6B7280; }
+  .tarefa-prazo.vencida { color: #EF4444; }
+  .tarefa-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+  .prioridade-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pri-alta { color: #EF4444; background: rgba(239,68,68,0.1); }
+  .pri-media { color: #F59E0B; background: rgba(245,158,11,0.1); }
+  .pri-baixa { color: #9CA3AF; background: rgba(156,163,175,0.1); }
+
+  /* FILTROS */
+  .filtros { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filtro-select {
+    padding: 8px 14px; border-radius: 10px; border: 2px solid #E5E7EB;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    color: #374151; background: white; cursor: pointer;
+  }
+
+  /* BTN PAGO */
+  .btn-pago {
+    padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 12px;
+    transition: all 0.2s;
+  }
+  .btn-pago.nao { background: #8F1245; color: white; }
+  .btn-pago.sim { background: #F3F4F6; color: #6B7280; }
+
+  /* LINK */
+  a.anexo { color: #99CC0F; font-weight: 700; font-size: 12px; text-decoration: none; }
+
+  /* LOADING / ERROR */
+  .msg-center { text-align: center; padding: 50px 20px; }
+  .loading-txt { font-family: 'Bebas Neue', cursive; font-size: 22px; color: #8F1245; letter-spacing: 2px; }
+  .error-box { background: #FEE2E2; border-radius: 12px; padding: 16px 18px; color: #991B1B; font-size: 13px; font-weight: 600; }
+
+  /* DRE */
+  .dre-controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .dre-row-ctrl { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .dre-label { font-size: 12px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+  .dre-select { padding: 8px 14px; border-radius: 10px; border: 2px solid #E5E7EB; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: #374151; background: white; cursor: pointer; flex: 1; }
+  .seg-wrap { display: flex; border: 2px solid #E5E7EB; border-radius: 10px; overflow: hidden; flex: 1; }
+  .seg-btn { flex: 1; padding: 8px 10px; background: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; color: #6B7280; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .seg-btn.active { background: #8F1245; color: white; }
+  .dre-info { background: white; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #6B7280; margin-bottom: 14px; border-left: 4px solid #99CC0F; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+  .dre-info strong { color: #1a1a1a; }
+  .dre-card { background: white; border-radius: 16px; box-shadow: 0 2px 14px rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 14px; }
+  .dre-card-header { background: linear-gradient(135deg, #8F1245, #BF195D); padding: 16px 18px; }
+  .dre-card-title { font-family: 'Bebas Neue', cursive; font-size: 11px; letter-spacing: 2.5px; color: rgba(255,255,255,0.7); }
+  .dre-card-mes { font-family: 'Bebas Neue', cursive; font-size: 22px; color: white; letter-spacing: 1.5px; margin-top: 2px; }
+  .dre-card-cnpj { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 3px; }
+  .dre-formato-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; margin-top: 6px; }
+  .fmt-comp { background: rgba(153,204,15,0.25); color: #99CC0F; }
+  .fmt-caixa { background: rgba(245,158,11,0.20); color: #F59E0B; }
+  .fmt-norm { background: rgba(59,130,246,0.20); color: #3B82F6; }
+  .dre-table { width: 100%; border-collapse: collapse; }
+  .dre-table td { padding: 8px 14px; font-size: 12px; border-bottom: 1px solid #F3F4F6; }
+  .dre-table tr:last-child td { border-bottom: none; }
+  .dc-op { width: 22px; color: #9CA3AF; font-size: 10px; }
+  .dc-grupo { width: 100px; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #9CA3AF; }
+  .dc-desc { font-size: 12px; color: #374151; }
+  .dc-val { text-align: right; font-family: 'Bebas Neue', cursive; font-size: 14px; white-space: nowrap; color: #041F40; }
+  .dc-pct { text-align: right; font-size: 10px; color: #9CA3AF; white-space: nowrap; width: 46px; }
+  tr.dr-header td { background: #F8FAFC; }
+  tr.dr-header .dc-desc { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #041F40; }
+  tr.dr-header .dc-val { font-size: 16px; }
+  tr.dr-total td { background: #F0FDF4; border-top: 2px solid #86EFAC; border-bottom: 2px solid #86EFAC; }
+  tr.dr-total .dc-desc { font-weight: 700; font-size: 12px; text-transform: uppercase; color: #166534; }
+  tr.dr-total .dc-val { font-size: 16px; color: #166534; }
+  tr.dr-total .dc-pct { color: #166534; }
+  tr.dr-neg td { background: #FFF5F5; border-top: 2px solid #FECACA; border-bottom: 2px solid #FECACA; }
+  tr.dr-neg .dc-desc { font-weight: 700; font-size: 12px; text-transform: uppercase; color: #991B1B; }
+  tr.dr-neg .dc-val { font-size: 16px; color: #991B1B; }
+  tr.dr-lucro td { background: #F0FDF4; border-top: 3px solid #4ADE80; }
+  tr.dr-lucro .dc-desc { font-weight: 700; font-size: 13px; text-transform: uppercase; color: #14532D; }
+  tr.dr-lucro .dc-val { font-size: 18px; color: #14532D; }
+  tr.dr-section td { background: #F1F5F9; padding: 4px 14px; }
+  tr.dr-section .dc-desc { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #8F1245; }
+  tr.dr-sub td { background: #FAFAFA; }
+  tr.dr-sub .dc-desc { font-weight: 600; font-size: 11px; text-transform: uppercase; color: #374151; }
+  tr.dr-sub .dc-val { font-size: 14px; font-weight: 700; }
+  .dv-neg { color: #991B1B !important; }
+  .dv-pos { color: #166534 !important; }
+  .dv-zero { color: #D1D5DB !important; }
+  .dre-indicadores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 2px; }
+  .ind-card { background: white; border-radius: 14px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-left: 4px solid #E5E7EB; }
+  .ind-label { font-size: 10px; color: #6B7280; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .ind-val { font-family: 'Bebas Neue', cursive; font-size: 26px; letter-spacing: 1px; }
+  .ind-sub { font-size: 10px; color: #9CA3AF; margin-top: 2px; }
+  .ind-ok { border-color: #4ADE80; }
+  .ind-ok .ind-val { color: #166534; }
+  .ind-warn { border-color: #FCA5A5; }
+  .ind-warn .ind-val { color: #991B1B; }
+
+  .doc-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; align-items:center; }
+  .btn-doc { cursor:pointer; font-weight:700; font-size:11px; padding:5px 10px; border-radius:7px; display:inline-flex; align-items:center; gap:4px; border:none; }
+  .btn-doc.verde { background:#99CC0F; color:#041F40; }
+  .btn-doc.cinza { background:#F3F4F6; color:#374151; }
+  .btn-doc.ok { background:#D1FAE5; color:#065F46; }
+  .select-tipo { padding:5px 10px; border-radius:7px; border:2px solid #E5E7EB; font-size:11px; font-weight:600; color:#374151; background:white; cursor:pointer; }
+  .rodape { margin-top: 28px; text-align: center; font-size: 10px; color: #C0B8B3; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+
+  @media (max-width: 500px) {
+    .summary.cols-3 { grid-template-columns: repeat(2,1fr); }
+    .tab { padding: 9px 10px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-box" style="background:white;padding:4px;">
+      <img src="https://qlcgjpaglyygnnkubxks.supabase.co/storage/v1/object/public/Bubble%20Mix%20Boulevard/logo.png" style="width:42px;height:42px;object-fit:contain;" alt="Bubble Mix">
+    </div>
+    <div>
+      <div class="brand-name">Bubble Mix</div>
+      <div class="brand-sub">Painel de Gestão · Boulevard Londrina</div>
+    </div>
+    <div class="header-date">
+      <div class="header-date-label">Hoje</div>
+      <div class="header-date-val" id="hoje-txt"></div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('lancamentos')">💰 Lançamentos</button>
+    <button class="tab" onclick="setTab('pedidos')">🛒 Pedidos</button>
+    <button class="tab" onclick="setTab('freelancers')">👤 Freelancers</button>
+    <button class="tab" onclick="setTab('tarefas')">✅ Tarefas</button>
+    <button class="tab" onclick="setTab('dre')">📈 DRE</button>
+  </div>
+</div>
+
+<div class="content" id="content">
+  <div class="msg-center"><div class="loading-txt">Carregando...</div></div>
+</div>
+
+<script>
+const URL = "https://qlcgjpaglyygnnkubxks.supabase.co/rest/v1";
+const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsY2dqcGFnbHl5Z25ua3VieGtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjIzNTAsImV4cCI6MjA5NDc5ODM1MH0.B6ie_CSlXcLYsfcnyboxPSuYmDIDcb4OcYGLz_p1Dno";
+const H = { apikey: KEY, Authorization: `Bearer ${KEY}`, "Content-Type": "application/json", Prefer: "return=representation" };
+
+const hoje = new Date().toISOString().split("T")[0];
+document.getElementById("hoje-txt").textContent = fmtDate(hoje);
+
+let activeTab = "lancamentos";
+let cache = {};
+let dreFormato = "competencia";
+let dreCache = {};
+
+function fmtDate(d) {
+  if (!d) return "—";
+  const [y,m,day] = d.split("-");
+  return `${day}/${m}/${y}`;
+}
+function fmt(v) {
+  return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+function fmtAbs(v) {
+  if (!v || Number(v) === 0) return "—";
+  return Number(Math.abs(v)).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+function isVencido(d, status) {
+  return d && d < hoje && status === "Em aberto";
+}
+
+async function apiFetch(table, params) {
+  const res = await fetch(`${URL}/${table}?${params}`, { headers: H });
+  if (!res.ok) throw new Error(`Erro ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+async function apiPatch(table, id, body) {
+  const res = await fetch(`${URL}/${table}?id=eq.${id}`, { method: "PATCH", headers: H, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(`Erro ${res.status}: ${await res.text()}`);
+}
+
+function setTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll(".tab").forEach((t,i) => {
+    t.classList.toggle("active", ["lancamentos","pedidos","freelancers","tarefas","dre"][i] === tab);
+  });
+  render();
+}
+
+async function load(tab) {
+  if (tab === "dre") return;
+  if (cache[tab]) return cache[tab];
+  const params = {
+    lancamentos: "select=id,data,fornecedor,descricao,valor,status,linha_dre,competencia,numero_nf,anexo_drive,tipo_lancamento,url_nf,url_boleto,url_comprovante,url_darf&order=data.desc&limit=100",
+    pedidos: "select=*&order=created_at.desc&limit=50",
+    freelancers: "select=*&order=data.desc&limit=50",
+    tarefas: "select=*&order=prazo.asc.nullslast&limit=100",
+  };
+  const rows = await apiFetch(tab, params[tab]);
+  cache[tab] = rows;
+  return rows;
+}
+
+async function render() {
+  const c = document.getElementById("content");
+  c.innerHTML = `<div class="msg-center"><div class="loading-txt">Carregando...</div></div>`;
+  try {
+    if (activeTab === "dre") { renderDREShell(); return; }
+    const rows = await load(activeTab);
+    if (activeTab === "lancamentos") renderLancamentos(rows);
+    else if (activeTab === "pedidos") renderPedidos(rows);
+    else if (activeTab === "freelancers") renderFreelancers(rows);
+    else if (activeTab === "tarefas") renderTarefas(rows);
+  } catch(e) {
+    c.innerHTML = `<div class="error-box">⚠️ ${e.message}</div>`;
+  }
+}
+
+function badge(status, label) {
+  const map = { "Em aberto": "aberto", "Pago": "pago", "Vencido": "vencido", "Not started": "notstarted", "In progress": "inprogress", "Done": "done" };
+  const cls = map[status] || "notstarted";
+  return `<span class="badge badge-${cls}"><span class="badge-dot"></span>${label||status}</span>`;
+}
+
+function renderLancamentos(rows) {
+  const totalAberto = rows.filter(r=>r.status==="Em aberto").reduce((s,r)=>s+Number(r.valor||0),0);
+  const pagos = rows.filter(r=>r.status==="Pago").length;
+  let html = `
+    <div class="summary cols-3">
+      <div class="stat-card" style="border-color:#8F1245"><div class="stat-label">⚠️ Total em Aberto</div><div class="stat-val" style="color:#8F1245">${fmt(totalAberto)}</div></div>
+      <div class="stat-card" style="border-color:#041F40"><div class="stat-label">📋 Lançamentos</div><div class="stat-val" style="color:#041F40">${rows.length}</div></div>
+      <div class="stat-card" style="border-color:#4D7C0F"><div class="stat-label">✅ Pagos</div><div class="stat-val" style="color:#4D7C0F">${pagos}</div></div>
+    </div>
+    <div class="table-wrap"><div class="table-scroll"><table>
+    <thead><tr>
+      <th>Data</th><th>Fornecedor</th><th>Descrição</th><th>Competência</th><th>Linha DRE</th><th>Valor</th><th>Status</th><th>Tipo</th><th>Documentos</th><th></th>
+    </tr></thead><tbody>`;
+  rows.forEach(r => {
+    const v = isVencido(r.data, r.status);
+    html += `<tr class="${v?"vencido":""}">
+      <td class="nowrap ${v?"red":""}">${fmtDate(r.data)}</td>
+      <td class="bold trunc">${r.fornecedor||"—"}</td>
+      <td class="muted trunc">${r.descricao||"—"}</td>
+      <td class="muted nowrap">${r.competencia||"—"}</td>
+      <td class="dre trunc">${r.linha_dre||"—"}</td>
+      <td class="money">${fmt(r.valor)}</td>
+      <td>${badge(v?"Vencido":r.status)}</td>
+      <td>
+        <select class="select-tipo" onchange="salvarTipoLanc(${r.id},this.value)">
+          <option value="" ${!r.tipo_lancamento?'selected':''}>— tipo —</option>
+          <option value="insumos_pix" ${r.tipo_lancamento==='insumos_pix'?'selected':''}>Insumos Pix</option>
+          <option value="insumos_boleto" ${r.tipo_lancamento==='insumos_boleto'?'selected':''}>Insumos Boleto</option>
+          <option value="servico_pix" ${r.tipo_lancamento==='servico_pix'?'selected':''}>Serviço Pix</option>
+          <option value="servico_boleto" ${r.tipo_lancamento==='servico_boleto'?'selected':''}>Serviço Boleto</option>
+          <option value="imposto" ${r.tipo_lancamento==='imposto'?'selected':''}>Imposto</option>
+          <option value="aluguel" ${r.tipo_lancamento==='aluguel'?'selected':''}>Aluguel/Condomínio</option>
+          <option value="folha" ${r.tipo_lancamento==='folha'?'selected':''}>Folha/Freelancer</option>
+        </select>
+      </td>
+      <td><div class="doc-btns" id="docs-${r.id}">${docBtns(r)}</div></td>
+      <td><button onclick="excluirLanc(${r.id})" style="background:none;border:none;cursor:pointer;font-size:16px;color:#D1D5DB;" title="Excluir">🗑️</button></td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div><div class="rodape">Bubble Mix Tea · Boulevard Londrina · Loja 22A · Dados em tempo real</div>`;
+  document.getElementById("content").innerHTML = html;
+}
+
+function renderPedidos(rows) {
+  const checks = [
+    {key:"check_nf_recebida",label:"NF Recebida"},
+    {key:"check_pedido_chegou",label:"Chegou"},
+    {key:"check_forma_pgto_confirmada",label:"Forma Pgto"},
+    {key:"check_comprovante_recebido",label:"Comprovante"},
+    {key:"check_email_processado",label:"E-mail"},
+    {key:"check_lancado_contas_pagar",label:"Lançado CP"},
+    {key:"check_baixa_alo_chefia",label:"Alo Chefia"},
+  ];
+  let html = "";
+  if (rows.length === 0) html = `<div class="msg-center" style="color:#9CA3AF">Nenhum pedido</div>`;
+  rows.forEach(p => {
+    const done = checks.filter(c=>p[c.key]).length;
+    const pct = Math.round(done/checks.length*100);
+    const cor = pct===100?"#99CC0F":"#8F1245";
+    html += `<div class="pedido-card" style="border-left:4px solid ${cor}">
+      <div class="pedido-header">
+        <div>
+          <div class="pedido-nome">${p.fornecedor||`Pedido #${p.id}`}</div>
+          <div class="pedido-meta">${fmtDate(p.data_pedido)} · NF ${p.numero_nf||"—"} · ${p.competencia||"—"}</div>
+        </div>
+        <div>
+          <div class="pedido-valor">${p.valor?fmt(p.valor):"—"}</div>
+          <div class="pedido-pct" style="color:${cor}">${done}/${checks.length} · ${pct}%</div>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${cor}"></div></div>
+      <div class="checks">`;
+    checks.forEach(c => {
+      const v = p[c.key];
+      html += `<div class="check-item" onclick="toggleCheck(${p.id},'${c.key}',${v})">
+        <div class="check-box ${v?"checked":""}">${v?`<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:""}</div>
+        <span class="check-label ${v?"checked":""}">${c.label}</span>
+      </div>`;
+    });
+        const fpago = (p.forma_pagamento||'').toLowerCase();
+    const isPix = fpago.includes('pix');
+    const isBoleto = fpago.includes('boleto');
+    const isDinheiro = fpago.includes('dinheiro');
+
+    const btnAnexar = (tipo, url, label, pedidoId) => {
+      const temArq = url && url.length > 0;
+      const verBtn = temArq
+        ? `<a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;background:#F0FDF4;border:1.5px solid #4D7C0F;color:#4D7C0F;font-weight:700;font-size:11px;text-decoration:none;white-space:nowrap;">👁 Ver</a>`
+        : `<span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;background:#F3F4F6;border:1.5px solid #E5E7EB;color:#D1D5DB;font-weight:700;font-size:11px;white-space:nowrap;cursor:not-allowed;">👁 Ver</span>`;
+      return `<div style="display:flex;align-items:center;gap:6px;">
+        <label style="cursor:pointer;background:#99CC0F;color:#041F40;font-weight:700;font-size:11px;padding:6px 12px;border-radius:7px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;border:1.5px solid #7aaa00;">
+          📎 ${label}
+          <input type="file" accept="image/*,application/pdf" style="display:none" onchange="uploadDoc(event,${pedidoId},'${tipo}',${temArq})">
+        </label>
+        ${verBtn}
+      </div>`;
+    };
+
+    const formaPgtoSelect = `<select style="padding:6px 12px;border-radius:7px;border:2px solid #E5E7EB;font-size:12px;font-weight:600;color:#374151;background:white;cursor:pointer;" onchange="salvarFormaPgto(${p.id},this.value)">
+      <option value="" ${!fpago?'selected':''}>Selecionar forma de pagamento</option>
+      <option value="Pix" ${isPix?'selected':''}>Pix</option>
+      <option value="Boleto" ${isBoleto?'selected':''}>Boleto</option>
+      <option value="Dinheiro" ${isDinheiro?'selected':''}>Dinheiro</option>
+    </select>`;
+
+    html += `</div>
+      <div style="margin-top:10px;">${formaPgtoSelect}</div>
+      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+        ${fpago ? btnAnexar('nf', p.url_nf, 'Anexar NF', p.id) : ''}
+        ${isPix ? btnAnexar('comprovante', p.url_comprovante, 'Anexar Comprovante Pix', p.id) : ''}
+        ${isBoleto ? btnAnexar('boleto', p.url_boleto, 'Anexar Boleto', p.id) : ''}
+        ${isBoleto ? btnAnexar('comprovante', p.url_comprovante, 'Anexar Comprovante Pagamento', p.id) : ''}
+        <span id="upload-status-${p.id}" style="font-size:11px;color:#6B7280;"></span>
+      </div>
+    </div>`;  });
+  html += `<div class="rodape">Bubble Mix Tea · Boulevard Londrina · Loja 22A · Dados em tempo real</div>`;
+  document.getElementById("content").innerHTML = html;
+}
+
+function renderFreelancers(rows) {
+  const totalAberto = rows.filter(r=>!r.pago).reduce((s,r)=>s+Number(r.valor||0),0);
+  const freelancers_unicos = [...new Set(rows.map(r=>r.freelancer))].filter(Boolean).sort();
+
+  let html = `
+    <div class="summary cols-2">
+      <div class="stat-card" style="border-color:#8F1245"><div class="stat-label">💸 Total a Pagar</div><div class="stat-val" style="color:#8F1245">${fmt(totalAberto)}</div></div>
+      <div class="stat-card" style="border-color:#041F40"><div class="stat-label">👤 Registros</div><div class="stat-val" style="color:#041F40">${rows.length}</div></div>
+    </div>
+
+    <!-- SUB-ABAS -->
+    <div style="display:flex;gap:3px;margin-bottom:16px;background:#F1F5F9;border-radius:10px;padding:4px;">
+      <button id="free-tab-registros" onclick="freeSubTab('registros')" style="flex:1;padding:8px;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;background:#8F1245;color:white;">📋 Registros</button>
+      <button id="free-tab-saldo" onclick="freeSubTab('saldo')" style="flex:1;padding:8px;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;background:transparent;color:#6B7280;">💰 Saldo</button>
+    </div>
+
+    <!-- REGISTROS -->
+    <div id="free-registros">
+      <!-- NOVO REGISTRO -->
+      <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.06);margin-bottom:16px;border-left:4px solid #99CC0F;">
+        <div style="font-weight:700;font-size:13px;color:#041F40;margin-bottom:12px;">➕ Novo Registro</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div>
+            <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Freelancer</div>
+            <select id="new-free-nome" style="width:100%;padding:8px;border-radius:8px;border:2px solid #E5E7EB;font-family:inherit;font-size:13px;font-weight:600;color:#374151;">
+              <option value="">Selecionar</option>
+              <option value="Amanda">Amanda</option>
+              <option value="Isaac">Isaac</option>
+              <option value="Sharah">Sharah</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Data</div>
+            <input type="date" id="new-free-data" style="width:100%;padding:8px;border-radius:8px;border:2px solid #E5E7EB;font-family:inherit;font-size:13px;color:#374151;">
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Horário</div>
+            <input type="text" id="new-free-horario" placeholder="Ex: 10h-16h" style="width:100%;padding:8px;border-radius:8px;border:2px solid #E5E7EB;font-family:inherit;font-size:13px;color:#374151;">
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Valor</div>
+            <input type="number" id="new-free-valor" placeholder="0,00" step="0.01" style="width:100%;padding:8px;border-radius:8px;border:2px solid #E5E7EB;font-family:inherit;font-size:13px;color:#374151;">
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;">
+            <input type="checkbox" id="new-free-pago" style="width:16px;height:16px;accent-color:#99CC0F;"> Já foi pago
+          </label>
+        </div>
+        <button onclick="salvarNovoFreelancer()" style="width:100%;background:#8F1245;color:white;border:none;padding:10px;border-radius:8px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;">Salvar Registro</button>
+        <div id="new-free-status" style="font-size:12px;color:#6B7280;margin-top:8px;text-align:center;"></div>
+      </div>
+
+      <!-- LISTA -->
+      <div style="background:white;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,0.06);overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="background:#041F40;">
+            <th style="padding:10px 12px;text-align:left;color:white;font-size:10px;font-weight:700;letter-spacing:1px;">FREELANCER</th>
+            <th style="padding:10px 12px;text-align:left;color:white;font-size:10px;font-weight:700;letter-spacing:1px;">DATA</th>
+            <th style="padding:10px 12px;text-align:left;color:white;font-size:10px;font-weight:700;letter-spacing:1px;">HORÁRIO</th>
+            <th style="padding:10px 12px;text-align:left;color:white;font-size:10px;font-weight:700;letter-spacing:1px;">VALOR</th>
+            <th style="padding:10px 12px;text-align:left;color:white;font-size:10px;font-weight:700;letter-spacing:1px;">STATUS</th>
+            <th style="padding:10px 12px;"></th>
+          </tr></thead>
+          <tbody>`;
+
+  rows.forEach(r => {
+    html += `<tr style="border-bottom:1px solid #F3F4F6;${!r.pago?'background:#FFFBEB':''}">
+      <td style="padding:10px 12px;font-weight:700;font-size:13px;white-space:nowrap;">${r.freelancer||'—'}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#6B7280;white-space:nowrap;">${fmtDate(r.data)}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#6B7280;">
+        <input type="text" value="${r.horario||''}" placeholder="—" onchange="editarHorario(${r.id},this.value)" style="width:80px;border:1px solid #E5E7EB;border-radius:6px;padding:4px 6px;font-family:inherit;font-size:11px;color:#374151;">
+      </td>
+      <td style="padding:10px 12px;font-weight:700;color:#041F40;white-space:nowrap;">${fmt(r.valor)}</td>
+      <td style="padding:10px 12px;">
+        <button class="btn-pago ${r.pago?'sim':'nao'}" onclick="togglePago(${r.id},${r.pago})">${r.pago?'✓ Pago':'Pagar'}</button>
+      </td>
+      <td style="padding:10px 12px;">
+        <button onclick="excluirFreelancer(${r.id})" style="background:none;border:none;cursor:pointer;font-size:15px;color:#D1D5DB;" title="Excluir">🗑️</button>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>
+    </div>
+
+    <!-- SALDO -->
+    <div id="free-saldo" style="display:none;">
+      <div style="margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Selecionar Freelancer</div>
+        <select id="saldo-select" onchange="calcularSaldo(this.value)" style="width:100%;padding:10px;border-radius:10px;border:2px solid #E5E7EB;font-family:inherit;font-size:14px;font-weight:600;color:#374151;">
+          <option value="">— Selecionar —</option>
+          ${freelancers_unicos.map(f=>`<option value="${f}">${f}</option>`).join('')}
+        </select>
+      </div>
+      <div id="saldo-content"></div>
+    </div>`;
+
+  html += `<div class="rodape">Bubble Mix Tea · Boulevard Londrina · Loja 22A · Dados em tempo real</div>`;
+  document.getElementById('content').innerHTML = html;
+  window._freeRows = rows;
+}
+
+function freeSubTab(tab) {
+  document.getElementById('free-registros').style.display = tab==='registros' ? 'block' : 'none';
+  document.getElementById('free-saldo').style.display = tab==='saldo' ? 'block' : 'none';
+  document.getElementById('free-tab-registros').style.background = tab==='registros' ? '#8F1245' : 'transparent';
+  document.getElementById('free-tab-registros').style.color = tab==='registros' ? 'white' : '#6B7280';
+  document.getElementById('free-tab-saldo').style.background = tab==='saldo' ? '#8F1245' : 'transparent';
+  document.getElementById('free-tab-saldo').style.color = tab==='saldo' ? 'white' : '#6B7280';
+}
+
+async function salvarNovoFreelancer() {
+  const nome = document.getElementById('new-free-nome').value;
+  const data = document.getElementById('new-free-data').value;
+  const horario = document.getElementById('new-free-horario').value;
+  const valor = parseFloat(document.getElementById('new-free-valor').value);
+  const pago = document.getElementById('new-free-pago').checked;
+  const statusEl = document.getElementById('new-free-status');
+
+  if (!nome || !data || !valor) { statusEl.textContent = '⚠️ Preencha freelancer, data e valor.'; return; }
+
+  statusEl.textContent = '⏳ Salvando...';
+  try {
+    const [y,m,day] = data.split('-');
+    const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const competencia = `${meses[parseInt(m)-1]}/${y}`;
+    const descricao = `${nome} — ${day}/${m}/${y}`;
+
+    // INSERT em freelancers
+    const resF = await fetch(`${URL}/freelancers`, {
+      method: 'POST', headers: H,
+      body: JSON.stringify({ freelancer: nome, data, horario, valor, pago, competencia, descricao })
+    });
+    if (!resF.ok) throw new Error('Erro freelancers');
+    const [novoF] = await resF.json();
+
+    // INSERT em lancamentos
+    const resL = await fetch(`${URL}/lancamentos`, {
+      method: 'POST', headers: H,
+      body: JSON.stringify({
+        data, fornecedor: nome, descricao, valor,
+        linha_dre: 'Pessoal - Freelancer', codigo_bbm: '5.8',
+        competencia, status: pago ? 'Pago' : 'Em aberto', forma_pagamento: 'Pix'
+      })
+    });
+    if (!resL.ok) throw new Error('Erro lancamentos');
+
+    statusEl.textContent = '✅ Salvo!';
+    cache.freelancers = null;
+    setTimeout(() => { load('freelancers').then(r => renderFreelancers(r)); }, 800);
+  } catch(e) { statusEl.textContent = '❌ ' + e.message; }
+}
+
+async function calcularSaldo(nome) {
+  if (!nome) { document.getElementById('saldo-content').innerHTML = ''; return; }
+  const el = document.getElementById('saldo-content');
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:#9CA3AF;">Calculando...</div>';
+  try {
+    const [diarias, consumos] = await Promise.all([
+      fetch(`${URL}/freelancers?freelancer=eq.${encodeURIComponent(nome)}&order=data.desc`, {headers:H}).then(r=>r.json()),
+      fetch(`${URL}/freelancer_consumos?freelancer=eq.${encodeURIComponent(nome)}&order=data.desc`, {headers:H}).then(r=>r.json())
+    ]);
+
+    const totalDiarias = diarias.filter(r=>!r.descricao||!r.descricao.toLowerCase().includes('adiantamento')).reduce((s,r)=>s+Number(r.valor||0),0);
+    const totalAdiantamentos = diarias.filter(r=>r.descricao&&r.descricao.toLowerCase().includes('adiantamento')).reduce((s,r)=>s+Number(r.valor||0),0);
+    const totalConsumosVal = consumos.reduce((s,r)=>s+Number(r.valor||0),0);
+    const saldo = totalDiarias - totalAdiantamentos - totalConsumosVal;
+
+    const categorias = [
+      {nome:'Fresh', preco:20}, {nome:'Yakult', preco:22}, {nome:'Tradicional', preco:23},
+      {nome:'Criações', preco:23}, {nome:'Coffee Mix', preco:23}, {nome:'Frozen', preco:22}, {nome:'Kids', preco:16}
+    ];
+
+    el.innerHTML = `
+      <!-- SALDO -->
+      <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.06);margin-bottom:14px;">
+        <div style="font-weight:700;font-size:11px;color:#6B7280;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">${nome}</div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F3F4F6;">
+          <span style="font-size:13px;color:#374151;">Total diárias</span>
+          <span style="font-weight:700;color:#4D7C0F;">${fmt(totalDiarias)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F3F4F6;">
+          <span style="font-size:13px;color:#374151;">(-) Adiantamentos</span>
+          <span style="font-weight:700;color:#991B1B;">${fmt(totalAdiantamentos)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:2px solid #E5E7EB;">
+          <span style="font-size:13px;color:#374151;">(-) Consumos</span>
+          <span style="font-weight:700;color:#991B1B;">${fmt(totalConsumosVal)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:12px 0;">
+          <span style="font-weight:700;font-size:15px;color:#041F40;">Saldo a pagar</span>
+          <span style="font-family:'Bebas Neue',cursive;font-size:22px;color:${saldo>=0?'#4D7C0F':'#991B1B'};">${fmt(Math.abs(saldo))}${saldo<0?' (crédito)':''}</span>
+        </div>
+      </div>
+
+      <!-- LANÇAR ADIANTAMENTO -->
+      <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.06);margin-bottom:14px;border-left:4px solid #8F1245;">
+        <div style="font-weight:700;font-size:13px;color:#041F40;margin-bottom:10px;">💸 Lançar Adiantamento</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div>
+            <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:4px;">DATA</div>
+            <input type="date" id="adiant-data" style="width:100%;padding:8px;border-radius:8px;border:2px solid #E5E7EB;font-family:inherit;font-size:12px;">
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:4px;">VALOR</div>
+            <input type="number" id="adiant-valor" placeholder="0,00" step="0.01" style="width:100%;padding:8px;border-radius:8px;border:2px solid #E5E7EB;font-family:inherit;font-size:12px;">
+          </div>
+        </div>
+        <button onclick="lancarAdiantamento('${nome}')" style="width:100%;background:#8F1245;color:white;border:none;padding:10px;border-radius:8px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;">Lançar Adiantamento</button>
+        <div id="adiant-status" style="font-size:11px;color:#6B7280;margin-top:6px;text-align:center;"></div>
+      </div>
+
+      <!-- LANÇAR CONSUMO -->
+      <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.06);margin-bottom:14px;border-left:4px solid #F59E0B;">
+        <div style="font-weight:700;font-size:13px;color:#041F40;margin-bottom:12px;">🧋 Lançar Consumo</div>
+
+        <!-- TIPO -->
+        <div style="display:flex;gap:6px;margin-bottom:14px;">
+          <button id="ctipo-bebida" onclick="setConsumoTipo('bebida')" style="flex:1;padding:8px;border-radius:8px;border:2px solid #F59E0B;background:#F59E0B;color:#041F40;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;">🧋 Bebida Pronta</button>
+          <button id="ctipo-insumo" onclick="setConsumoTipo('insumo')" style="flex:1;padding:8px;border-radius:8px;border:2px solid #E5E7EB;background:white;color:#6B7280;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;">🥤 Insumo Solto</button>
+        </div>
+
+        <!-- BEBIDA PRONTA -->
+        <div id="consumo-bebida">
+          <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Categoria</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+            ${categorias.map(c=>`<button onclick="selecionarCategoria('${c.nome}',${c.preco})" id="cat-${c.nome.replace(' ','')}" style="padding:8px;border-radius:8px;border:2px solid #E5E7EB;background:white;font-family:inherit;font-size:12px;font-weight:600;color:#374151;cursor:pointer;text-align:left;">
+              <div>${c.nome}</div>
+              <div style="font-size:10px;color:#9CA3AF;">R$${c.preco} × 0,40 = <strong style="color:#8F1245;">R$${(c.preco*0.4).toFixed(2)}</strong></div>
+            </button>`).join('')}
+          </div>
+          <div id="bebida-preview" style="display:none;background:#FFF8E7;border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;">
+            <div style="font-size:11px;color:#6B7280;">Valor do consumo</div>
+            <div id="bebida-valor-preview" style="font-family:'Bebas Neue',cursive;font-size:24px;color:#8F1245;"></div>
+          </div>
+        </div>
+
+        <!-- INSUMO SOLTO -->
+        <div id="consumo-insumo" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div>
+              <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:4px;">PRODUTO</div>
+              <input type="text" id="insumo-desc" placeholder="Ex: Yakult" style="width:100%;padding:8px;border-radius:8px;border:2px solid #E5E7EB;font-family:inherit;font-size:12px;">
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:4px;">VALOR (R$)</div>
+              <input type="number" id="insumo-valor" placeholder="0,00" step="0.01" style="width:100%;padding:8px;border-radius:8px;border:2px solid #E5E7EB;font-family:inherit;font-size:12px;">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:10px;font-weight:600;color:#6B7280;margin-bottom:4px;">DATA</div>
+          <input type="date" id="consumo-data" style="width:100%;padding:8px;border-radius:8px;border:2px solid #E5E7EB;font-family:inherit;font-size:12px;margin-bottom:10px;">
+        </div>
+        <button onclick="lancarConsumo('${nome}')" style="width:100%;background:#F59E0B;color:#041F40;border:none;padding:10px;border-radius:8px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;">Lançar Consumo</button>
+        <div id="consumo-status" style="font-size:11px;color:#6B7280;margin-top:6px;text-align:center;"></div>
+      </div>
+
+      <!-- HISTÓRICO CONSUMOS -->
+      ${consumos.length > 0 ? `
+      <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
+        <div style="font-weight:700;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Histórico de Consumos</div>
+        ${consumos.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F3F4F6;">
+          <div><div style="font-size:12px;font-weight:600;">${c.descricao||'Consumo'}</div><div style="font-size:11px;color:#9CA3AF;">${fmtDate(c.data)}</div></div>
+          <span style="font-weight:700;color:#991B1B;">${fmt(c.valor)}</span>
+        </div>`).join('')}
+      </div>` : ''}`;
+
+    window._consumoTipo = 'bebida';
+    window._consumoValor = 0;
+    window._consumoDesc = '';
+  } catch(e) { el.innerHTML = `<div class="error-box">❌ ${e.message}</div>`; }
+}
+
+function setConsumoTipo(tipo) {
+  window._consumoTipo = tipo;
+  document.getElementById('consumo-bebida').style.display = tipo==='bebida'?'block':'none';
+  document.getElementById('consumo-insumo').style.display = tipo==='insumo'?'block':'none';
+  document.getElementById('ctipo-bebida').style.background = tipo==='bebida'?'#F59E0B':'white';
+  document.getElementById('ctipo-bebida').style.color = tipo==='bebida'?'#041F40':'#6B7280';
+  document.getElementById('ctipo-bebida').style.borderColor = tipo==='bebida'?'#F59E0B':'#E5E7EB';
+  document.getElementById('ctipo-insumo').style.background = tipo==='insumo'?'#F59E0B':'white';
+  document.getElementById('ctipo-insumo').style.color = tipo==='insumo'?'#041F40':'#6B7280';
+  document.getElementById('ctipo-insumo').style.borderColor = tipo==='insumo'?'#F59E0B':'#E5E7EB';
+  window._consumoValor = 0;
+  window._consumoDesc = '';
+}
+
+function selecionarCategoria(nome, preco) {
+  const valor = preco * 0.4;
+  window._consumoValor = valor;
+  window._consumoDesc = `Bebida ${nome}`;
+  document.getElementById('bebida-preview').style.display = 'block';
+  document.getElementById('bebida-valor-preview').textContent = `R$ ${valor.toFixed(2)}`;
+  // Destacar botão selecionado
+  document.querySelectorAll('[id^="cat-"]').forEach(b => {
+    b.style.borderColor = '#E5E7EB'; b.style.background = 'white';
+  });
+  const btn = document.getElementById('cat-' + nome.replace(' ',''));
+  if (btn) { btn.style.borderColor = '#F59E0B'; btn.style.background = '#FFF8E7'; }
+}
+
+async function lancarAdiantamento(nome) {
+  const data = document.getElementById('adiant-data').value;
+  const valor = parseFloat(document.getElementById('adiant-valor').value);
+  const statusEl = document.getElementById('adiant-status');
+  if (!data || !valor) { statusEl.textContent = '⚠️ Preencha data e valor.'; return; }
+  statusEl.textContent = '⏳ Salvando...';
+  try {
+    const [y,m,day] = data.split('-');
+    const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const competencia = `${meses[parseInt(m)-1]}/${y}`;
+    const descricao = `${nome} — Adiantamento ${day}/${m}/${y}`;
+    await fetch(`${URL}/freelancers`, { method:'POST', headers:H, body: JSON.stringify({ freelancer:nome, data, valor, pago:true, competencia, descricao }) });
+    await fetch(`${URL}/lancamentos`, { method:'POST', headers:H, body: JSON.stringify({ data, fornecedor:nome, descricao, valor, linha_dre:'Pessoal - Freelancer', codigo_bbm:'5.8', competencia, status:'Pago', forma_pagamento:'Pix' }) });
+    statusEl.textContent = '✅ Lançado!';
+    document.getElementById('adiant-data').value = '';
+    document.getElementById('adiant-valor').value = '';
+    cache.freelancers = null;
+    setTimeout(() => calcularSaldo(nome), 800);
+  } catch(e) { statusEl.textContent = '❌ ' + e.message; }
+}
+
+async function lancarConsumo(nome) {
+  const data = document.getElementById('consumo-data').value;
+  const statusEl = document.getElementById('consumo-status');
+  if (!data) { statusEl.textContent = '⚠️ Preencha a data.'; return; }
+
+  let valor = 0, descricao = '';
+  if (window._consumoTipo === 'bebida') {
+    valor = window._consumoValor;
+    descricao = window._consumoDesc;
+    if (!valor) { statusEl.textContent = '⚠️ Selecione uma categoria.'; return; }
+  } else {
+    valor = parseFloat(document.getElementById('insumo-valor').value);
+    descricao = document.getElementById('insumo-desc').value || 'Insumo solto';
+    if (!valor) { statusEl.textContent = '⚠️ Preencha o valor.'; return; }
+  }
+
+  statusEl.textContent = '⏳ Salvando...';
+  try {
+    await fetch(`${URL}/freelancer_consumos`, { method:'POST', headers:H, body: JSON.stringify({ freelancer:nome, data, valor, descricao }) });
+    statusEl.textContent = '✅ Lançado!';
+    document.getElementById('consumo-data').value = '';
+    window._consumoValor = 0; window._consumoDesc = '';
+    setTimeout(() => calcularSaldo(nome), 800);
+  } catch(e) { statusEl.textContent = '❌ ' + e.message; }
+}
+
+
+
+async function editarHorario(id, valor) {
+  try {
+    await apiPatch('freelancers', id, { horario: valor });
+    cache.freelancers = cache.freelancers.map(f => f.id===id ? {...f, horario:valor} : f);
+  } catch(e) { alert('Erro: ' + e.message); }
+}
+
+async function excluirFreelancer(id) {
+  if (!confirm('Excluir este registro? Esta ação não pode ser desfeita.')) return;
+  try {
+    const res = await fetch(`${URL}/freelancers?id=eq.${id}`, { method: 'DELETE', headers: H });
+    if (!res.ok) throw new Error('Erro ' + res.status);
+    cache.freelancers = cache.freelancers.filter(f => f.id !== id);
+    renderFreelancers(cache.freelancers);
+  } catch(e) { alert('Erro: ' + e.message); }
+}
+
+async function togglePago(id, current) {
+  try {
+    await apiPatch("freelancers", id, {pago: !current});
+    cache.freelancers = cache.freelancers.map(f => f.id===id ? {...f,pago:!current} : f);
+    renderFreelancers(cache.freelancers);
+  } catch(e) { alert("Erro: "+e.message); }
+}
+async function toggleTarefa(id, current) {
+  const next = current==="Done"?"Not started": current==="Not started"?"In progress":"Done";
+  try {
+    await apiPatch("tarefas", id, {status: next});
+    cache.tarefas = cache.tarefas.map(t => t.id===id ? {...t,status:next} : t);
+    renderTarefas(cache.tarefas);
+  } catch(e) { alert("Erro: "+e.message); }
+}
+
+render();
+</script>
+</body>
+</html>
