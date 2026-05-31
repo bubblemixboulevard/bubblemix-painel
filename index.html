@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bubble Mix · Painel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --verde:#99CC0F; --vinho:#8F1245; --pink:#BF195D; --azul:#041F40; --bege:#E5D4C3;
+  --bg:#F2F2F2; --card:#FFFFFF; --txt:#1a1a1a; --muted:#6B7280; --line:#E5E7EB;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;max-width:430px;margin:0 auto;padding-bottom:84px;}
+
+/* HEADER */
+.header{background:#fff;border-bottom:1px solid var(--line);padding:14px 18px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:12px;}
+.header-logo{height:34px;object-fit:contain;}
+.header-right{margin-left:auto;text-align:right;}
+.header-date-label{font-size:9px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.header-date-val{font-size:14px;font-weight:700;}
+
+/* CONTENT */
+.content{padding:14px;}
+.page-title{font-family:'Bebas Neue',cursive;font-size:26px;letter-spacing:1px;color:var(--azul);margin-bottom:2px;}
+.page-sub{font-size:12px;color:var(--muted);margin-bottom:16px;}
+
+/* CARDS RESUMO */
+.summary{display:grid;gap:10px;margin-bottom:16px;}
+.cols-2{grid-template-columns:1fr 1fr;}
+.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.stat-card{background:var(--card);border-radius:14px;padding:13px 14px;box-shadow:0 1px 6px rgba(0,0,0,.06);border-left:4px solid var(--vinho);}
+.stat-label{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:4px;}
+.stat-val{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:.5px;}
+
+/* ALERTAS */
+.alert-box{background:#FFF5F5;border-left:4px solid #EF4444;border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+.alert-title{font-size:12px;font-weight:700;color:#991B1B;margin-bottom:4px;}
+.alert-item{font-size:12px;color:#7F1D1D;padding:3px 0;}
+.ok-box{background:#F0FDF4;border-left:4px solid var(--verde);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:#166534;font-weight:600;}
+
+/* LANÇAMENTO CARD */
+.lanc-card{background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.06);border-left:4px solid var(--vinho);}
+.lanc-card.pago{border-left-color:var(--verde);}
+.lanc-card.vencido{border-left-color:#EF4444;}
+.lanc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.lanc-forn{font-weight:700;font-size:14px;line-height:1.3;}
+.lanc-meta{font-size:11px;color:var(--muted);margin-top:3px;}
+.lanc-dre{font-size:10px;color:var(--vinho);font-weight:600;margin-top:3px;}
+.lanc-val{font-weight:800;font-size:15px;color:var(--azul);white-space:nowrap;}
+.lanc-val.neg{color:#166534;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;margin-top:5px;}
+.badge .dot{width:5px;height:5px;border-radius:50%;}
+.b-aberto{background:#FFF3CD;color:#856404;} .b-aberto .dot{background:#F59E0B;}
+.b-pago{background:#D1FAE5;color:#065F46;} .b-pago .dot{background:#10B981;}
+.b-vencido{background:#FEE2E2;color:#991B1B;} .b-vencido .dot{background:#EF4444;}
+
+/* FILTROS */
+.filtros{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+.filtro-chip{padding:7px 14px;border-radius:99px;border:2px solid var(--line);background:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;}
+.filtro-chip.active{background:var(--vinho);color:#fff;border-color:var(--vinho);}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--vinho);display:flex;padding:8px 0 20px;z-index:100;}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.bnav-icon{font-size:19px;line-height:1;}
+.bnav-lbl{font-size:8.5px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.3px;}
+.bnav-item.active .bnav-lbl{color:var(--verde);}
+
+/* LOADING / MSG */
+.msg-center{text-align:center;padding:50px 20px;}
+.loading-txt{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--vinho);letter-spacing:2px;}
+.error-box{background:#FEE2E2;border-radius:12px;padding:14px 16px;color:#991B1B;font-size:13px;font-weight:600;}
+.empty{text-align:center;padding:40px 20px;color:#9CA3AF;font-size:13px;}
+.rodape{margin-top:22px;text-align:center;font-size:9px;color:#C0B8B3;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;}
+
+/* PEDIDOS */
+.btn-novo{width:100%;padding:13px;border-radius:12px;border:none;background:var(--verde);color:var(--azul);font-family:'DM Sans',sans-serif;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:14px;}
+.ped-card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,.06);}
+.ped-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;}
+.ped-forn{font-weight:700;font-size:14px;line-height:1.3;}
+.ped-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.ped-val{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--azul);white-space:nowrap;}
+.ped-forma{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;margin-top:4px;}
+.forma-pix{background:rgba(153,204,15,.2);color:#4D7C0F;}
+.forma-boleto{background:rgba(4,31,64,.1);color:var(--azul);}
+.forma-dinheiro{background:rgba(191,25,93,.12);color:var(--pink);}
+.progress-bar{height:6px;background:#F3F4F6;border-radius:99px;margin:10px 0;overflow:hidden;}
+.progress-fill{height:100%;border-radius:99px;background:var(--verde);transition:width .4s;}
+.ped-pct{font-size:11px;font-weight:700;color:var(--muted);text-align:right;margin-bottom:8px;}
+.checks{display:flex;flex-direction:column;gap:6px;}
+.check-row{display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 10px;background:#F9FAFB;border-radius:9px;}
+.check-box{width:22px;height:22px;border-radius:6px;border:2px solid #D1D5DB;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:#fff;transition:all .2s;}
+.check-box.on{background:var(--verde);border-color:var(--verde);}
+.check-lbl{font-size:12px;color:#9CA3AF;font-weight:500;}
+.check-lbl.on{color:var(--txt);font-weight:600;}
+.ped-done{background:rgba(153,204,15,.1);border:1px solid var(--verde);}
+.check-row-wrap{width:100%;}
+.up-btn{background:var(--verde);color:var(--azul);font-weight:700;font-size:11px;padding:5px 10px;border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.ver-link{background:#F0FDF4;color:#166534;font-weight:700;font-size:11px;padding:5px 10px;border-radius:7px;text-decoration:none;border:1px solid var(--verde);white-space:nowrap;flex-shrink:0;}
+.forma-seletor{background:#F9FAFB;border-radius:10px;padding:12px;text-align:center;}
+.forma-seletor-lbl{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;}
+.forma-opts{display:flex;gap:8px;}
+.forma-opt{flex:1;padding:10px;border-radius:9px;border:2px solid var(--vinho);background:#fff;color:var(--vinho);font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
+.forma-opt:active{background:var(--vinho);color:#fff;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:22px 18px 30px;max-height:85vh;overflow-y:auto;}
+.modal-title{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--azul);letter-spacing:1px;margin-bottom:16px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.field input,.field select{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--line);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);background:#fff;}
+.modal-btns{display:flex;gap:10px;margin-top:6px;}
+.modal-btns button{flex:1;padding:13px;border-radius:11px;border:none;font-family:'DM Sans',sans-serif;font-weight:800;font-size:14px;cursor:pointer;}
+.btn-cancel{background:#F3F4F6;color:var(--muted);}
+.btn-save{background:var(--verde);color:var(--azul);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img class="header-logo" src="https://qlcgjpaglyygnnkubxks.supabase.co/storage/v1/object/public/Bubble%20Mix%20Boulevard/logo.png" alt="Bubble Mix">
+  <div class="header-right">
+    <div class="header-date-label">Hoje</div>
+    <div class="header-date-val" id="hoje-txt">—</div>
+  </div>
+</div>
+
+<div class="content" id="content">
+  <div class="msg-center"><div class="loading-txt">Carregando...</div></div>
+</div>
+
+<nav class="bnav">
+  <button class="bnav-item active" data-tab="home" onclick="nav('home',this)"><span class="bnav-icon">🏠</span><span class="bnav-lbl">Home</span></button>
+  <button class="bnav-item" data-tab="pagar" onclick="nav('pagar',this)"><span class="bnav-icon">💰</span><span class="bnav-lbl">A Pagar</span></button>
+  <button class="bnav-item" data-tab="pedidos" onclick="nav('pedidos',this)"><span class="bnav-icon">📦</span><span class="bnav-lbl">Pedidos</span></button>
+  <button class="bnav-item" data-tab="pessoas" onclick="nav('pessoas',this)"><span class="bnav-icon">👥</span><span class="bnav-lbl">Pessoas</span></button>
+  <button class="bnav-item" data-tab="dre" onclick="nav('dre',this)"><span class="bnav-icon">📊</span><span class="bnav-lbl">DRE</span></button>
+</nav>
+
+<script>
+const SUPA="https://qlcgjpaglyygnnkubxks.supabase.co/rest/v1";
+const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsY2dqcGFnbHl5Z25ua3VieGtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjIzNTAsImV4cCI6MjA5NDc5ODM1MH0.B6ie_CSlXcLYsfcnyboxPSuYmDIDcb4OcYGLz_p1Dno";
+const H={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
+
+function fmt(v){var n=Number(v||0);return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});}
+function fmtDate(d){if(!d)return "—";var p=d.split("-");return p[2]+"/"+p[1]+"/"+p[0];}
+function hojeISO(){return new Date().toISOString().split("T")[0];}
+function isVencido(data,status){if(status==="Pago")return false;if(!data)return false;return data<hojeISO();}
+
+async function api(tabela,query){
+  var r=await fetch(SUPA+"/"+tabela+"?"+query,{headers:H});
+  if(!r.ok)throw new Error("Erro "+r.status+" em "+tabela);
+  return await r.json();
+}
+
+var filtroPagar="todos";
+
+function nav(tab,btn){
+  document.querySelectorAll(".bnav-item").forEach(function(b){b.classList.remove("active");});
+  if(btn)btn.classList.add("active");
+  render(tab);
+}
+
+async function render(tab){
+  var c=document.getElementById("content");
+  c.innerHTML='<div class="msg-center"><div class="loading-txt">Carregando...</div></div>';
+  try{
+    if(tab==="home")await renderHome(c);
+    else if(tab==="pagar")await renderPagar(c);
+    else if(tab==="pedidos")await renderPedidos(c);
+    else c.innerHTML='<div class="empty">Módulo em construção.<br>Vamos montar este depois.</div>';
+  }catch(e){
+    c.innerHTML='<div class="error-box">⚠️ '+e.message+'</div>';
+  }
+}
+
+/* ===== HOME ===== */
+async function renderHome(c){
+  var hoje=hojeISO();
+  var seteDias=new Date(Date.now()+7*864e5).toISOString().split("T")[0];
+  var lancs=await api("lancamentos","status=eq.Em aberto&select=fornecedor,valor,data,competencia&order=data.asc");
+  var aPagar7=lancs.filter(function(l){return l.data&&l.data<=seteDias;});
+  var vencidos=lancs.filter(function(l){return l.data&&l.data<hoje;});
+  var totalAberto=lancs.reduce(function(s,l){return s+Number(l.valor||0);},0);
+  var total7=aPagar7.reduce(function(s,l){return s+Number(l.valor||0);},0);
+
+  var frees=await api("freelancers","pago=eq.false&select=freelancer,valor,tipo");
+  var freePend=frees.filter(function(f){return f.tipo==="diaria";});
+
+  var html='<div class="page-title">Resumo</div><div class="page-sub">Bubble Mix Boulevard · Loja 22A</div>';
+
+  // Alertas
+  if(vencidos.length>0){
+    html+='<div class="alert-box"><div class="alert-title">⚠️ '+vencidos.length+' conta(s) vencida(s)</div>';
+    vencidos.slice(0,4).forEach(function(l){html+='<div class="alert-item">'+l.fornecedor+' · '+fmt(l.valor)+' · venceu '+fmtDate(l.data)+'</div>';});
+    html+='</div>';
+  }else{
+    html+='<div class="ok-box">✅ Nenhuma conta vencida</div>';
+  }
+
+  // Cards
+  html+='<div class="summary cols-2">';
+  html+='<div class="stat-card" style="border-color:#8F1245"><div class="stat-label">A pagar (7 dias)</div><div class="stat-val" style="color:#8F1245">'+fmt(total7)+'</div></div>';
+  html+='<div class="stat-card" style="border-color:#041F40"><div class="stat-label">Total em aberto</div><div class="stat-val" style="color:#041F40">'+fmt(totalAberto)+'</div></div>';
+  html+='</div>';
+
+  html+='<div class="summary cols-2">';
+  html+='<div class="stat-card" style="border-color:#99CC0F"><div class="stat-label">Freelancers a pagar</div><div class="stat-val" style="color:#4D7C0F">'+freePend.length+'</div></div>';
+  html+='<div class="stat-card" style="border-color:#BF195D"><div class="stat-label">Contas em aberto</div><div class="stat-val" style="color:#BF195D">'+lancs.length+'</div></div>';
+  html+='</div>';
+
+  html+='<div class="rodape">Bubble Mix Tea · Boulevard Londrina</div>';
+  c.innerHTML=html;
+}
+
+/* ===== CONTAS A PAGAR ===== */
+async function renderPagar(c){
+  var lancs=await api("lancamentos","select=id,data,data_pagamento,fornecedor,descricao,valor,linha_dre,competencia,status,forma_pagamento,numero_nf&order=data.desc&limit=300");
+
+  var totalAberto=lancs.filter(function(l){return l.status==="Em aberto";}).reduce(function(s,l){return s+Number(l.valor||0);},0);
+  var pagos=lancs.filter(function(l){return l.status==="Pago";}).length;
+
+  var html='<div class="page-title">Contas a Pagar</div><div class="page-sub">'+lancs.length+' lançamentos</div>';
+
+  html+='<div class="summary cols-3">';
+  html+='<div class="stat-card" style="border-color:#8F1245"><div class="stat-label">Em aberto</div><div class="stat-val" style="color:#8F1245">'+fmt(totalAberto)+'</div></div>';
+  html+='<div class="stat-card" style="border-color:#041F40"><div class="stat-label">Total</div><div class="stat-val" style="color:#041F40">'+lancs.length+'</div></div>';
+  html+='<div class="stat-card" style="border-color:#4D7C0F"><div class="stat-label">Pagos</div><div class="stat-val" style="color:#4D7C0F">'+pagos+'</div></div>';
+  html+='</div>';
+
+  // Filtros
+  var filtros=[["todos","Todos"],["aberto","Em aberto"],["vencido","Vencidos"],["pago","Pagos"]];
+  html+='<div class="filtros">';
+  filtros.forEach(function(f){
+    html+='<button class="filtro-chip '+(filtroPagar===f[0]?"active":"")+'" onclick="setFiltroPagar(\''+f[0]+'\')">'+f[1]+'</button>';
+  });
+  html+='</div>';
+
+  // Lista filtrada
+  var lista=lancs.filter(function(l){
+    var v=isVencido(l.data,l.status);
+    if(filtroPagar==="aberto")return l.status==="Em aberto"&&!v;
+    if(filtroPagar==="vencido")return v;
+    if(filtroPagar==="pago")return l.status==="Pago";
+    return true;
+  });
+
+  if(lista.length===0){
+    html+='<div class="empty">Nenhum lançamento neste filtro.</div>';
+  }else{
+    lista.forEach(function(l){
+      var v=isVencido(l.data,l.status);
+      var cls=v?"vencido":(l.status==="Pago"?"pago":"");
+      var bdg=v?'<span class="badge b-vencido"><span class="dot"></span>Vencido</span>':(l.status==="Pago"?'<span class="badge b-pago"><span class="dot"></span>Pago</span>':'<span class="badge b-aberto"><span class="dot"></span>Em aberto</span>');
+      var neg=Number(l.valor)<0?"neg":"";
+      html+='<div class="lanc-card '+cls+'">';
+      html+='<div class="lanc-top"><div style="flex:1;min-width:0;">';
+      html+='<div class="lanc-forn">'+(l.fornecedor||l.descricao||"—")+'</div>';
+      html+='<div class="lanc-meta">'+fmtDate(l.data)+' · '+(l.competencia||"—")+(l.forma_pagamento?' · '+l.forma_pagamento:'')+'</div>';
+      if(l.linha_dre)html+='<div class="lanc-dre">'+l.linha_dre+'</div>';
+      html+='</div><div style="text-align:right;"><div class="lanc-val '+neg+'">'+fmt(l.valor)+'</div>'+bdg+'</div>';
+      html+='</div></div>';
+    });
+  }
+
+  html+='<div class="rodape">Bubble Mix Tea · Boulevard Londrina</div>';
+  c.innerHTML=html;
+}
+
+function setFiltroPagar(f){
+  filtroPagar=f;
+  render("pagar");
+}
+
+/* ===== PEDIDOS ===== */
+// Cada check: [campo_check, label, tipo_documento_ou_null, campo_url]
+function checksDoFluxo(forma){
+  if(forma==="Boleto")return [
+    ["check_nf_recebida","NF recebida","nf","url_nf"],
+    ["check_pedido_chegou","Mercadoria chegou",null,null],
+    ["check_comprovante_recebido","Comprovante (pago)","comprovante","url_comprovante"],
+    ["check_baixa_alo_chefia","Abastecer Alo Chefia",null,null]
+  ];
+  if(forma==="Dinheiro")return [
+    ["check_nf_recebida","NF recebida","nf","url_nf"],
+    ["check_pedido_chegou","Mercadoria chegou",null,null],
+    ["check_baixa_alo_chefia","Abastecer Alo Chefia",null,null]
+  ];
+  // Pix: paga na hora
+  return [
+    ["check_comprovante_recebido","Comprovante (pago)","comprovante","url_comprovante"],
+    ["check_nf_recebida","NF recebida","nf","url_nf"],
+    ["check_pedido_chegou","Mercadoria chegou",null,null],
+    ["check_baixa_alo_chefia","Abastecer Alo Chefia",null,null]
+  ];
+}
+
+async function renderPedidos(c){
+  var peds=await api("pedidos","select=*&order=data_pedido.desc");
+  var abertos=peds.filter(function(p){return !p.check_baixa_alo_chefia;}).length;
+
+  var html='<div class="page-title">Pedidos</div><div class="page-sub">'+peds.length+' pedidos · '+abertos+' em andamento</div>';
+  html+='<button class="btn-novo" onclick="abrirModalPedido()">+ Novo Pedido</button>';
+
+  if(peds.length===0){
+    html+='<div class="empty">Nenhum pedido ainda.<br>Toque em "Novo Pedido" para começar.</div>';
+  }else{
+    peds.forEach(function(p){
+      var checks=checksDoFluxo(p.forma_pagamento);
+      var feitos=checks.filter(function(ch){return p[ch[0]];}).length;
+      var pct=Math.round(feitos/checks.length*100);
+      var done=feitos===checks.length;
+      var formaCls=p.forma_pagamento==="Boleto"?"forma-boleto":(p.forma_pagamento==="Dinheiro"?"forma-dinheiro":"forma-pix");
+
+      html+='<div class="ped-card'+(done?' ped-done':'')+'">';
+      html+='<div class="ped-top"><div style="flex:1;min-width:0;">';
+      html+='<div class="ped-forn">'+(p.fornecedor||"—")+'</div>';
+      html+='<div class="ped-meta">'+fmtDate(p.data_pedido)+(p.numero_nf?' · NF '+p.numero_nf:'')+'</div>';
+      html+='<span class="ped-forma '+formaCls+'">'+(p.forma_pagamento||"sem forma")+'</span>';
+      html+='</div><div class="ped-val">'+fmt(p.valor)+'</div></div>';
+
+      html+='<div class="ped-pct">'+(done?'✅ Concluído':feitos+'/'+checks.length+' · '+pct+'%')+'</div>';
+      html+='<div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div>';
+
+      var temForma=p.forma_pagamento&&["Pix","Boleto","Dinheiro"].indexOf(p.forma_pagamento)>=0;
+      if(!temForma){
+        html+='<div class="forma-seletor"><div class="forma-seletor-lbl">Definir forma de pagamento:</div><div class="forma-opts">';
+        html+='<button class="forma-opt" onclick="definirForma('+p.id+',\'Pix\')">Pix</button>';
+        html+='<button class="forma-opt" onclick="definirForma('+p.id+',\'Boleto\')">Boleto</button>';
+        html+='<button class="forma-opt" onclick="definirForma('+p.id+',\'Dinheiro\')">Dinheiro</button>';
+        html+='</div></div>';
+      }else{
+        html+='<div class="checks">';
+        checks.forEach(function(ch){
+          var campo=ch[0], label=ch[1], tipoDoc=ch[2], campoUrl=ch[3];
+          var on=p[campo];
+          var temDoc=tipoDoc&&campoUrl;
+          var url=temDoc?p[campoUrl]:null;
+
+          html+='<div class="check-row-wrap">';
+          if(temDoc){
+            html+='<div class="check-row" style="cursor:default;">';
+            html+='<div class="check-box '+(on?"on":"")+'">'+(on?"✓":"")+'</div>';
+            html+='<div class="check-lbl '+(on?"on":"")+'" style="flex:1;">'+label+'</div>';
+            if(url){
+              html+='<a class="ver-link" href="'+url+'" target="_blank">Ver</a>';
+            }else{
+              html+='<label class="up-btn">📎 Subir<input type="file" accept="image/*,application/pdf" style="display:none" onchange="uploadDocPedido(event,'+p.id+',\''+tipoDoc+'\',\''+campoUrl+'\',\''+campo+'\')"></label>';
+            }
+            html+='</div>';
+          }else{
+            html+='<div class="check-row" onclick="toggleCheck('+p.id+',\''+campo+'\','+(!on)+')">';
+            html+='<div class="check-box '+(on?"on":"")+'">'+(on?"✓":"")+'</div>';
+            html+='<div class="check-lbl '+(on?"on":"")+'">'+label+'</div>';
+            html+='</div>';
+          }
+          html+='</div>';
+        });
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+  }
+  html+='<div class="rodape">Bubble Mix Tea · Boulevard Londrina</div>';
+  c.innerHTML=html;
+}
+
+async function toggleCheck(id,campo,novoValor){
+  try{
+    var body={};body[campo]=novoValor;
+    var r=await fetch(SUPA+"/pedidos?id=eq."+id,{method:"PATCH",headers:H,body:JSON.stringify(body)});
+    if(!r.ok)throw new Error("Erro ao salvar "+r.status);
+    render("pedidos");
+  }catch(e){alert("Erro: "+e.message);}
+}
+
+async function definirForma(id,forma){
+  try{
+    var r=await fetch(SUPA+"/pedidos?id=eq."+id,{method:"PATCH",headers:H,body:JSON.stringify({forma_pagamento:forma})});
+    if(!r.ok)throw new Error("Erro ao salvar "+r.status);
+    render("pedidos");
+  }catch(e){alert("Erro: "+e.message);}
+}
+
+async function uploadDocPedido(event,pedidoId,tipoDoc,campoUrl,campoCheck){
+  var file=event.target.files[0];
+  if(!file)return;
+  try{
+    var EDGE="https://qlcgjpaglyygnnkubxks.supabase.co/functions/v1/upload-documento";
+    var pastas={nf:"NFs",boleto:"Boletos",comprovante:"Comprovantes",darf:"DARFs"};
+    var fd=new FormData();
+    fd.append("file",file,file.name);
+    fd.append("pasta",pastas[tipoDoc]||"Geral");
+    var res=await fetch(EDGE,{method:"POST",body:fd});
+    if(!res.ok)throw new Error("Erro no upload "+res.status);
+    var data=await res.json();
+    // salva url + marca o check, numa tacada
+    var body={};body[campoUrl]=data.url;body[campoCheck]=true;
+    var r2=await fetch(SUPA+"/pedidos?id=eq."+pedidoId,{method:"PATCH",headers:H,body:JSON.stringify(body)});
+    if(!r2.ok)throw new Error("Erro ao salvar "+r2.status);
+    render("pedidos");
+  }catch(e){alert("Erro: "+e.message);}
+}
+
+function abrirModalPedido(){
+  var hoje=hojeISO();
+  var html='<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)fecharModal()">';
+  html+='<div class="modal">';
+  html+='<div class="modal-title">Novo Pedido</div>';
+  html+='<div class="field"><label>Fornecedor</label><input id="np-forn" type="text" placeholder="Nome do fornecedor"></div>';
+  html+='<div class="field"><label>Valor (R$)</label><input id="np-valor" type="number" inputmode="decimal" placeholder="0,00"></div>';
+  html+='<div class="field"><label>Data do pedido</label><input id="np-data" type="date" value="'+hoje+'"></div>';
+  html+='<div class="modal-btns"><button class="btn-cancel" onclick="fecharModal()">Cancelar</button><button class="btn-save" onclick="salvarPedido()">Criar</button></div>';
+  html+='</div></div>';
+  var div=document.createElement("div");
+  div.id="modal-wrap";
+  div.innerHTML=html;
+  document.body.appendChild(div);
+}
+
+function fecharModal(){
+  var m=document.getElementById("modal-wrap");
+  if(m)m.remove();
+}
+
+async function salvarPedido(){
+  var forn=document.getElementById("np-forn").value.trim();
+  var valor=parseFloat(document.getElementById("np-valor").value);
+  var data=document.getElementById("np-data").value;
+  if(!forn){alert("Informe o fornecedor");return;}
+  if(!valor||valor<=0){alert("Informe um valor válido");return;}
+  if(!data){alert("Informe a data");return;}
+  try{
+    var body={fornecedor:forn,valor:valor,data_pedido:data,
+      check_pedido_chegou:false,check_nf_recebida:false,check_forma_pgto_confirmada:false,
+      check_comprovante_recebido:false,check_email_processado:false,check_lancado_contas_pagar:false,check_baixa_alo_chefia:false};
+    var r=await fetch(SUPA+"/pedidos",{method:"POST",headers:H,body:JSON.stringify(body)});
+    if(!r.ok)throw new Error("Erro ao criar "+r.status);
+    fecharModal();
+    render("pedidos");
+  }catch(e){alert("Erro: "+e.message);}
+}
+
+/* ===== INIT ===== */
+document.getElementById("hoje-txt").textContent=fmtDate(hojeISO());
+render("home");
+</script>
+</body>
+</html>
